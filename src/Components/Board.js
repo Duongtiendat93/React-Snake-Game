@@ -33,8 +33,8 @@ function Board() {
   const [snakeCells,setSnakeCells] = useState(new Set([44]));
   const [snake,setSnake] = useState(new SinglyLinkedList(new Cell(4,3,44)));
   const [direction,setDirection] = useState(Direction.RIGHT)
-  // const snakeCellsRef = useRef();
-  // snakeCellsRef.current = new Set([44]);
+  const snakeCellsRef = useRef();
+  snakeCellsRef.current = new Set([44]);
 
  
 
@@ -89,8 +89,8 @@ function Board() {
       new Cell(nextHeadCoords.row,nextHeadCoords.col,nextHeadValue),
     );
 
-    const newSnakeCells = new Set(snakeCells);
-    // console.log("snakeCellsRef",snakeCellsRef.current)
+    const newSnakeCells = new Set(snakeCellsRef.current);
+    console.log("snakeCellsRef",snakeCellsRef.current)
     newSnakeCells.delete(snake.tail.value.value);
     newSnakeCells.add(nextHeadValue)
 
@@ -100,7 +100,8 @@ function Board() {
 
     // console.log("newSnakecells",newSnakeCells);
     // snakeCellsRef.current = newSnakeCells;
-    setSnakeCells(newSnakeCells)
+    snakeCellsRef.current = newSnakeCells
+    setSnakeCells(newSnakeCells);
   }
 
   
@@ -140,10 +141,10 @@ const createBroad = BROAD_SIZE => {
   return board;
 };
 const getDirectionFromKey = direction => {
-  if (direction === Direction.UP) return Direction.DOWN;
-  if (direction === Direction.RIGHT) return Direction.LEFT;
-  if (direction === Direction.DOWN) return Direction.UP;
-  if (direction === Direction.LEFT) return Direction.RIGHT;
+  if (direction === "ArrowUp") return Direction.UP;
+  if (direction ==="ArrowRight") return Direction.RIGHT;
+  if (direction === "ArrowDown") return Direction.DOWN;
+  if (direction === "ArrowLeft") return Direction.LEFT;
   return "";
 }
 export default Board;

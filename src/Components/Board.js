@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {randomIntFromInterval} from "../lib/ultils"
+import {randomIntFromInterval,useInterval} from "../lib/ultils"
 const BROAD_SIZE = 10;
 
 class LinkedListNode {
@@ -40,10 +40,6 @@ function Board() {
 
   
   useEffect(()=>{
-    setInterval(()=>{
-      // moveSmake();  
-    },1000)
-
     window.addEventListener("keydown",e => {
       const newDirection = getDirectionFromKey(e.key);
       // kiểm  tra có phải hướng hợp lệ ko, có phải chuổi trống ko
@@ -53,6 +49,10 @@ function Board() {
     })
 
   },[]) 
+
+  useInterval(()=>{
+      moveSmake();  
+    },1000)
 
   const moveSmake = () => {
     const currentHeadCoords = {
@@ -127,7 +127,7 @@ function Board() {
 
   return (
     <>
-    <button onClick={() => moveSmake()}> Move Manually</button>
+    <button onClick={() => moveSmake()} className="p-6 w-40 mx-auto rounded text-black mb-2 bg-slate-300 border-2 border-black  "> Move Manually</button>
       <div className="">
       {broad.map((row, rowindex) => (
         <div key={rowindex} className="h-10">
@@ -135,8 +135,8 @@ function Board() {
             <div
               key={cellindex}
               className={`h-10 w-10 inline-block border-2 outline-orange-600 ${
-                snakeCells.has(cellValue) ? "bg-green-500" :""
-              } ${foodCell === cellValue ? "bg-red-500": ""}`}
+                snakeCells.has(cellValue) ? "bg-red-500" :""
+              } ${foodCell === cellValue ? "bg-black": ""}`}
             >{cellValue}</div>
           ))}
         </div>

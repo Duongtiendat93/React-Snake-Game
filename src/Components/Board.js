@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-
+import {randomIntFromInterval} from "../lib/ultils"
 const BROAD_SIZE = 10;
 
 class LinkedListNode {
@@ -30,13 +30,72 @@ const Direction = {
 }
 function Board() {
   const [broad, setBroad] = useState(createBroad(BROAD_SIZE));
+  const [foodCell,setFoodCell] = useState(48)
   const [snakeCells,setSnakeCells] = useState(new Set([44]));
   const [snake,setSnake] = useState(new SinglyLinkedList(new Cell(4,3,44)));
   const [direction,setDirection] = useState(Direction.RIGHT)
   const snakeCellsRef = useRef();
-  snakeCellsRef.current = new Set([44]);
+  // snakeCellsRef.current = new Set([44]);
 
- 
+
+  
+  useEffect(()=>{
+    setInterval(()=>{
+      // moveSmake();  
+    },1000)
+
+    window.addEventListener("keydown",e => {
+      const newDirection = getDirectionFromKey(e.key);
+      // kiểm  tra có phải hướng hợp lệ ko, có phải chuổi trống ko
+      const isValidDirection = newDirection !== "" ;
+      // set hướng đi
+      if(isValidDirection) setDirection(newDirection)
+    })
+
+  },[]) 
+
+  const moveSmake = () => {
+    const currentHeadCoords = {
+      row: snake.head.value.row,
+      col: snake.head.value.col,
+    };
+
+    const nextHeadCoords = getNextHeadCoords(currentHeadCoords,direction);
+    const nextHeadValue = broad[nextHeadCoords.row] [nextHeadCoords.col];
+
+    if( nextHeadValue === foodCell) handleFoodConsumption()
+
+    const newHead = new LinkedListNode(
+      new Cell(nextHeadCoords.row,nextHeadCoords.col,nextHeadValue),
+    );
+    
+    const newSnakeCells = new Set(snakeCellsRef.current);
+    console.log("snakeCellsRef",snakeCellsRef.current)
+    newSnakeCells.delete(snake.tail.value.value);
+    newSnakeCells.add(nextHeadValue)
+    
+    console.log("snake:",newSnakeCells)
+    snake.head = newHead;
+    snake.tail = snake.tail.next;
+    if(snake.tail === null) snake.tail = snake.head;
+
+    // console.log("newSnakecells",newSnakeCells);
+    // snakeCellsRef.current = newSnakeCells;
+    // snakeCellsRef.current = newSnakeCells
+    setSnakeCells(newSnakeCells);
+  }
+  //  Tiêu thụ thực phẩm
+  const handleFoodConsumption = ( ) => {
+    const maxPossibleCellValue = BROAD_SIZE * BROAD_SIZE;
+    let nextFoodCell;
+    while(true){
+      nextFoodCell = randomIntFromInterval(1,maxPossibleCellValue);
+      console.log("aaa",snakeCells)
+      if(snakeCells.has(nextFoodCell) || foodCell === nextFoodCell) continue;
+      break;
+    }
+    setFoodCell(nextFoodCell)
+  }
 
   const getNextHeadCoords = (currentSnakeHead,direction) => {
     if(direction === Direction.UP){
@@ -57,53 +116,13 @@ function Board() {
         col:currentSnakeHead.col,
       }
     }
-    if(direction === Direction.UP){
+    if(direction === Direction.LEFT){
       return{
         row: currentSnakeHead.row ,
         col:currentSnakeHead.col - 1,
       }
     }
   }
-  useEffect(()=>{
-    setInterval(()=>{
-      // moveSmake();  
-    },1000)
-
-    window.addEventListener("keydown",e => {
-      const newDirection = getDirectionFromKey(e.key);
-      const isValidDirection = newDirection !== "" ;
-      if(isValidDirection) setDirection(newDirection)
-    })
-
-  },[])
-
-  const moveSmake = () => {
-    const currentHeadCoords = {
-      row: snake.head.value.row,
-      col: snake.head.value.col,
-    };
-
-    const nextHeadCoords = getNextHeadCoords(currentHeadCoords,direction);
-    const nextHeadValue = broad[nextHeadCoords.row] [nextHeadCoords.col];
-    const newHead = new LinkedListNode(
-      new Cell(nextHeadCoords.row,nextHeadCoords.col,nextHeadValue),
-    );
-
-    const newSnakeCells = new Set(snakeCellsRef.current);
-    console.log("snakeCellsRef",snakeCellsRef.current)
-    newSnakeCells.delete(snake.tail.value.value);
-    newSnakeCells.add(nextHeadValue)
-
-    snake.head = newHead;
-    snake.tail = snake.tail.next;
-    if(snake.tail === null) snake.tail = snake.head;
-
-    // console.log("newSnakecells",newSnakeCells);
-    // snakeCellsRef.current = newSnakeCells;
-    snakeCellsRef.current = newSnakeCells
-    setSnakeCells(newSnakeCells);
-  }
-
   
 
   return (
@@ -117,7 +136,7 @@ function Board() {
               key={cellindex}
               className={`h-10 w-10 inline-block border-2 outline-orange-600 ${
                 snakeCells.has(cellValue) ? "bg-green-500" :""
-              }`}
+              } ${foodCell === cellValue ? "bg-red-500": ""}`}
             >{cellValue}</div>
           ))}
         </div>

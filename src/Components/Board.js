@@ -31,9 +31,23 @@ const BROAD_SIZE = 10;
 const STARTING_SNAKE_CELL = 44;
 const STARTING_FOOD_CELL = 48;
 const START_SNAKE_LL_VALUE = {
-  row: 4,
-  col: 3,
+  row: BROAD_SIZE/2,
+  col: BROAD_SIZE/2,
   cell: STARTING_SNAKE_CELL,
+};
+
+const getStartingSnakeLLValue = board => {
+  const rowSize = board.length;
+  const colSize = board[0].length;
+  console.log("rowSize",colSize)
+  const startingRow = Math.round(rowSize / 3);
+  const startingCol = Math.round(colSize / 3);
+  const startingCell = board[startingRow][startingCol];
+  return {
+    row: startingRow,
+    col: startingCol,
+    cell: startingCell,
+  };
 };
 
 function Board() {
@@ -42,7 +56,7 @@ function Board() {
   const [foodCell, setFoodCell] = useState(STARTING_FOOD_CELL);
   const [snakeCells, setSnakeCells] = useState(new Set([STARTING_SNAKE_CELL]));
   const [snake, setSnake] = useState(
-    new SinglyLinkedList(START_SNAKE_LL_VALUE)
+    new SinglyLinkedList(getStartingSnakeLLValue(broad))
   );
   const [direction, setDirection] = useState(Direction.RIGHT);
   const snakeCellsRef = useRef();
@@ -107,6 +121,15 @@ function Board() {
     setSnakeCells(newSnakeCells);
   };
 
+  const growSnake = () => {
+    // const currentTailCoords = {
+    //   row: snake.tail.value.row,
+    //   col: snake.tail.value.col
+    // }
+    const getNextTailNodeDirection = getNextNodeDirection(snake.tail);
+    // const growthNodeCoords = getGrowthDirection(snake.tail.tailNextNodeDirection,broad)
+  }
+
   const handleSnakeGrowth = () => {
     // const maxPossibleCellValue = BROAD_SIZE * BROAD_SIZE;
     // let nextFoodCell;
@@ -160,14 +183,17 @@ function Board() {
 
   const handleGameOver = () => {
     setScore(0);
-    setFoodCell(STARTING_FOOD_CELL);
-    setSnakeCells(new Set(STARTING_SNAKE_CELL.cell));
-    setSnake(new SinglyLinkedList(START_SNAKE_LL_VALUE));
+    const snakeLLStartingValue = getStartingSnakeLLValue(broad);
+    setSnake(new SinglyLinkedList(snakeLLStartingValue));
+    setFoodCell(snakeLLStartingValue.cell + 5);
+    setSnakeCells(new Set([snakeLLStartingValue.cell]));
+    setDirection(Direction.RIGHT);
   };
 
   return (
     <>
       <h1 className="text-3xl mb-6">Score: {score}</h1>
+      <button onClick={growSnake()}>Grow Snake Manual</button>
       <div className="">
         {broad.map((row, rowindex) => (
           <div key={rowindex} className="h-10">
@@ -178,7 +204,7 @@ function Board() {
                   snakeCells.has(cellValue) ? "bg-red-500" : ""
                 } ${foodCell === cellValue ? "bg-black" : ""}`}
               >
-                {/* {cellValue} */}
+                {cellValue}
               </div>
             ))}
           </div>
@@ -200,6 +226,7 @@ const createBroad = (BROAD_SIZE) => {
   }
   return board;
 };
+
 const isOutOfBounds = (coords, board) => {
   const { row, col } = coords;
   if (row < 0 || col < 0) return true;
@@ -214,4 +241,47 @@ const getDirectionFromKey = (direction) => {
   if (direction === "ArrowLeft") return Direction.LEFT;
   return "";
 };
+
+const getNextNodeDirection = (node,currentDirection) =>{
+  if(node.next === null) return currentDirection;
+  const {row :currentRow,col:currentCol} = node.value;
+  const {row :nextRow,col:nextCol} = node.next.value;
+  if(nextRow === currentRow && nextCol === currentCol + 1) {
+    return Direction.RIGHT
+  }
+  if(nextRow === currentRow && nextCol === currentCol - 1) {
+    return Direction.LEFT
+  }
+  if(nextRow === currentRow + 1 && nextCol === currentCol ) {
+    return Direction.DOWN
+  }
+  if(nextRow === currentRow - 1 && nextCol === currentCol ) {
+    return Direction.UP
+  }
+  return " ";
+}
+const getGrowthNodeCoords = (snakeTail, currentDirection) => {
+  const tailNextNodeDirection = getNextNodeDirection(
+    snakeTail,
+    currentDirection,
+  );
+  const growthDirection = getOppositeDirection(tailNextNodeDirection);
+  const currentTailCoords = {
+    row: snakeTail.value.row,
+    col: snakeTail.value.col,
+  };
+  const growthNodeCoords = getCoordsInDirection(
+    currentTailCoords,
+    growthDirection,
+  );
+  return growthNodeCoords;
+};
+
+const getOppositeDirection = direction => {
+  if (direction === Direction.UP) return Direction.DOWN;
+  if (direction === Direction.RIGHT) return Direction.LEFT;
+  if (direction === Direction.DOWN) return Direction.UP;
+  if (direction === Direction.LEFT) return Direction.RIGHT;
+};
+
 export default Board;
